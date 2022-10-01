@@ -26,18 +26,24 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 const isURL = require('is-url');
 const pdfjs = require('pdfjs-dist/legacy/build/pdf.js');
 const Canvas = require("canvas");
+const registerFont = Canvas.registerFont;
 const assert = require("assert").strict;
 const fs = require("fs");
 const util = require('util');
 
 const readFile = util.promisify(fs.readFile);
 
-function NodeCanvasFactory() {}
+function NodeCanvasFactory(fontArgs) {
+  this.fontArgs = fontArgs;
+}
 NodeCanvasFactory.prototype = {
   create: function NodeCanvasFactory_create(width, height) {
     assert(width > 0 && height > 0, "Invalid canvas size");
     var canvas = Canvas.createCanvas(width, height);
     var context = canvas.getContext("2d");
+    if(this.fontArgs){
+      context.font = this.fontArgs;
+    }
     return {
       canvas: canvas,
       context: context,
@@ -101,7 +107,15 @@ module.exports.convert = async function (pdf, conversion_config = {}) {
 
   var pdfDocument = await loadingTask.promise
 
-  var canvasFactory = new NodeCanvasFactory();
+  // TODO: LOADING CUSTOM FONTS if provided
+  if(conversion_config.fonts){
+    conversion_config.fonts.configs.forEach(fontData => {
+      // TODO Register fonts
+      registerFont(fontData.path, fontData.options);
+    });
+  }
+
+  var canvasFactory = new NodeCanvasFactory(conversion_config.fonts.args);
 
   if (conversion_config.height <= 0 || conversion_config.width <= 0)
     console.error("Negative viewport dimension given. Defaulting to 100% scale.");
