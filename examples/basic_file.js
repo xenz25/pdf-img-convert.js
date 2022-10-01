@@ -33,7 +33,7 @@ var pdfOptions = {
 }
 
 // This returns a promise as it's an async function
-var output = pdf2img.convert('./examples/test_pdfs/1272812f-1ade-4d1e-9a59-6f5d202e93bd.pdf', pdfOptions);
+var output = pdf2img.convert('./examples/test_pdfs/sample.pdf', pdfOptions);
 
 // Acting on this promise when it's fulfilled:
 output.then(function(pdfArray) {
